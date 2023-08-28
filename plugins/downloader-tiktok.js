@@ -3,6 +3,8 @@ import fetch from "node-fetch"
 import cheerio from "cheerio"
 import got from "got"
 import fg from "api-dylux"
+import { fetchVideo } from "@prevter/tiktok-scraper"
+import { Tiktok } from "@xct007/tiktok-scraper"
 
 let handler = async (m, {
     command,
@@ -15,48 +17,50 @@ let handler = async (m, {
     let lister = [
         "v1",
         "v2",
-        "v3"
+        "v3",
+        "v4",
+        "v5"
     ]
 let spas = "                "
-    let [feature, inputs, inputs_, inputs__, inputs___] = text.split(" ")
-    if (!lister.includes(feature.toLowerCase())) return m.reply("*Example:*\n" + usedPrefix + command + " v2 link\n\n*Pilih type yg ada*\n" + lister.map((v, index) => "  ○ " + v.toUpperCase()).join("\n"))
-
+    let [inputs, feature, inputs_, inputs__, inputs___] = text.split(" ")
+    feature = feature || lister.getRandom()
+    let exam = "*Example:*\n" + usedPrefix + command + " link version\n\n*Pilih type yg ada*\n" + lister.map((v, index) => "  ○ " + v.toUpperCase()).join("\n")
+    if (!lister.includes(feature.toLowerCase())) return m.reply(exam)
+    
     if (lister.includes(feature)) {
         
         if (feature == "v1") {
-            if (!inputs) return m.reply("Input query link")
+            if (!inputs) return m.reply(`*Input tiktok link*\n\n${exam}`)
             m.reply(wait)
                 try {
                 let Scrap = await Tiktokdl(inputs)
                 let S = Scrap.result
                 let ScrapCap = `${spas}*「 T I K T O K 」*
 
-*📛Author:* ${S.author.nickname}
-*📒Title:* ${S.desc}
-`
+*📛 Author:* ${S.author.nickname}
+*📒 Title:* ${S.desc}
+\n${spas}*[ ${feature.toUpperCase()} ]*`
                 await conn.sendFile(m.chat, S.download.nowm, "", ScrapCap, m)
             } catch (e) {
                 throw eror
             }
-
         }
         if (feature == "v2") {
-            if (!inputs) return m.reply("Input query link")
+            if (!inputs) return m.reply(`*Input tiktok link*\n\n${exam}`)
             m.reply(wait)
                 try {
                 const god = await axios.get("https://godownloader.com/api/tiktok-no-watermark-free?url=" + inputs + "&key=godownloader.com")
                 let GoCap = `${spas}*[ T I K T O K ]*
 
 *Desc:* ${god.data.desc}
-`
+\n${spas}*[ ${feature.toUpperCase()} ]*`
                 await conn.sendFile(m.chat, god.data.video_no_watermark, "", GoCap, m)
             } catch (e) {
                 throw eror
             }
-
         }
         if (feature == "v3") {
-            if (!inputs) return m.reply("Input query link")
+            if (!inputs) return m.reply(`*Input tiktok link*\n\n${exam}`)
             m.reply(wait)
                 try {
                 let Fg = await fg.tiktok(inputs)
@@ -66,12 +70,45 @@ let spas = "                "
 *Unique ID:* ${Fg.unique_id}
 *Download Count:* ${Fg.download_count}
 *Duration:* ${Fg.duration}
-*Description:* ${Fg.description}`
+*Description:* ${Fg.description}\n${spas}*[ ${feature.toUpperCase()} ]*`
                 await conn.sendFile(m.chat, Fg.play || Fg.hdplay , "", FgCap, m)
             } catch (e) {
                 throw eror
             }
+        }
+        if (feature == "v4") {
+            if (!inputs) return m.reply(`*Input tiktok link*\n\n${exam}`)
+            m.reply(wait)
+                try {
+                const video = await fetchVideo(inputs);
+                const buffer = await video.download({
+  progress: (p) => {
+    console.log(`Downloaded ${p.progress}% (${p.downloaded}/${p.total} bytes)`);
+  },
+});
+    let PrevCap = `${spas}*[ T I K T O K ]*
 
+${getVideoInfo(video)}
+\n${spas}*[ ${feature.toUpperCase()} ]*`
+                await conn.sendFile(m.chat, buffer || giflogo , "", PrevCap, m)
+            } catch (e) {
+                throw eror
+            }
+        }
+        if (feature == "v5") {
+            if (!inputs) return m.reply(`*Input tiktok link*\n\n${exam}`)
+            m.reply(wait)
+                try {
+                const videoX = await Tiktok(inputs);
+                
+    let XctCap = `${spas}*[ T I K T O K ]*
+
+${getUserProfileInfo(videoX)}
+\n${spas}*[ ${feature.toUpperCase()} ]*`
+                await conn.sendFile(m.chat, videoX.download.nowm || giflogo , "", XctCap, m)
+            } catch (e) {
+                throw eror
+            }
         }
 
     }
@@ -167,4 +204,34 @@ async function Tiktokdl(url) {
             result: e
         }
     }
+}
+
+function getVideoInfo(video) {
+    return `Video description: ${video.description}\n` +
+           `🔗 URL: ${video.url}\n` +
+           `👤 Author: ${video.author}\n` +
+           `❤️ Likes: ${video.likes}\n` +
+           `💬 Comments: ${video.comments}\n` +
+           `🔁 Shares: ${video.shares}\n` +
+           `▶️ Plays: ${video.playCount}\n` +
+           `🎵 Music: ${video.music.name} - ${video.music.author}\n` +
+           `🖼️ Thumbnail URL: ${video.previewImageUrl}`;
+}
+
+function getEmojiCount(count) {
+  const emojis = ['👍', '❤️', '🔁', '💬', '🔥'];
+  return emojis[Math.floor(Math.random() * emojis.length)] + count.toLocaleString();
+}
+
+function getUserProfileInfo(tiktokData) {
+  const user = tiktokData.author;
+  const stats = tiktokData.statistics;
+  
+  return `User Profile:
+🆔 Unique ID: ${user.uid}
+👤 Nickname: ${user.nickname}
+💬 Description: ${tiktokData.desc}
+👥 Comments: ${getEmojiCount(stats.comment_count)}
+👍 Likes: ${getEmojiCount(stats.digg_count)}
+🎵 Music: ${tiktokData.download.music_info.title}`;
 }

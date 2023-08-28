@@ -1,5 +1,4 @@
-
-    async function handler(m, { isAdmin, isOwner }) {
+let handler = async (m, { conn, text, command, usedPrefix, isAdmin, isOwner }) => {
     if (m.isGroup) {
         if (!(isAdmin || isOwner)) {
             dfail('admin', m, conn)
@@ -7,9 +6,13 @@
         }
     }
     if (!m.quoted) throw 'balas pesannya!'
-    let q = this.serializeM(await m.getQuotedObj())
-    if (!q.quoted) throw 'pesan yang anda reply tidak mengandung reply!'
-    await q.quoted.copyNForward(m.chat, {quoted: m, contextInfo:{"forwardingScore": 1000, "isForwarded": true}})
+    try {
+		var q = this.serializeM(await (this.serializeM(await m.getQuotedObj())).getQuotedObj())
+		if (!q) throw 'pesan yang anda reply tidak mengandung reply!'
+		await q.copyNForward(m.chat, true)
+	} catch (e) {
+		throw 'pesan yang anda reply tidak mengandung reply!'
+	}
 }
 handler.help = ['q']
 handler.tags = ['tools']
