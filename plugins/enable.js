@@ -1,5 +1,5 @@
 let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isROwner }) => {
-const features = ["antiCall", "antiDelete", "antiLink", "antiLinkFb", "antiLinkHttp", "antiLinkIg", "antiLinkTel", "antiLinkTik", "antiLinkWa", "antiLinkYt", "antiSatir", "antiSticker", "antiVirtex", "antiToxic", "antibule", "autoBio", "autoChat", "autoJoin", "autoPresence", "autoReply", "autoSticker", "autoVn", "viewStory", "bcjoin", "detect", "getmsg", "nsfw", "antiSpam", "simi", "updateAnime", "updateAnimeNews", "viewonce", "welcome", "autoread", "gconly", "nyimak", "pconly", "self", "swonly", "lastAnime", "latestNews"];
+const features = ["antiCall", "antiDelete", "antiLink", "antiLinkFb", "antiLinkHttp", "antiLinkIg", "antiLinkTel", "antiLinkTik", "antiLinkWa", "antiLinkYt", "antiSatir", "antiSticker", "antiVirtex", "antiToxic", "antibule", "autoBio", "autoChat", "autoGpt", "autoJoin", "autoPresence", "autoReply", "autoSticker", "autoVn", "viewStory", "bcjoin", "detect", "getmsg", "nsfw", "antiSpam", "simi", "updateAnime", "updateAnimeNews", "viewonce", "welcome", "autoread", "gconly", "nyimak", "pconly", "self", "swonly", "lastAnime", "latestNews"];
 const activeFeatures = ["antiDelete", "detect", "getmsg", "lastAnime", "latestNews", "welcome"];
 const result = features.map((f, i) => {
   const isActive = activeFeatures.includes(f) ? !global.db.data.chats[m.chat][f] : global.db.data.chats[m.chat][f];
@@ -38,8 +38,18 @@ if (["antiDelete", "detect", "getmsg", "lastAnime", "latestNews", "welcome"].inc
   chat[type] = !isEnable;
   conn.reply(m.chat, `Feature *${type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}* mode *${isEnable ? 'ON ✅' : 'OFF ❌'}*`, m);
   } else {
+  if (["autoChat"].includes(type)) {
+  conn.autochat = conn.autochat ? conn.autochat : {}
+  conn.autochat.status = isEnable;
+  conn.reply(m.chat, `Feature *${type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}* mode *${isEnable ? 'ON ✅' : 'OFF ❌'}*`, m);
+  } else if (["autoGpt"].includes(type)) {
+  conn.autogpt = conn.autogpt ? conn.autogpt : {}
+  conn.autogpt.status = isEnable;
+  conn.reply(m.chat, `Feature *${type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}* mode *${isEnable ? 'ON ✅' : 'OFF ❌'}*`, m);
+  } else {
   chat[type] = isEnable;
   conn.reply(m.chat, `Feature *${type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}* mode *${isEnable ? 'ON ✅' : 'OFF ❌'}*`, m);
+  }
   }
 };
 handler.help = ["en", "dis"].map(v => v + "able <nomor>");

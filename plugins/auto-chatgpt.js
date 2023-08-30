@@ -1,27 +1,28 @@
 import fetch from 'node-fetch';
 
 export async function before(m) {
-    if (m.isBaileys) return false;
-    let text = extractTextAfterKeyword(m.text)
-    if (text) {
-        try {
-            let result = await gptGo(text)
+  this.autogpt = this.autogpt ? this.autogpt : {};
+  if (m.isBaileys || !this.autogpt.status || !m.text) return false;
+  let text = m.text;
+  if (text) {
+    try {
+      if (text.includes('gpt') || text.includes('chatgpt')) {
+        const startIdx = Math.max(text.indexOf('gpt'), text.indexOf('chatgpt')) + 2;
+        const inputText = text.substring(startIdx).trim();
+        const result = await gptGo(inputText)
             if (result) {
                 await this.reply(m.chat, result, m);
             }
-        } catch {
-            await this.reply(m.chat, eror, m);
-        }
+      } else if (text.startsWith('off')) {
+        this.autogpt.status = false;
+        await this.reply(m.chat, `*Chatgpt OFF*`, m);
+      }
+    } catch {
+      await this.reply(m.chat, 'Error occurred.', m);
     }
+  }
 }
 
-function extractTextAfterKeyword(input) {
-    const regex = /^(gpt|Gpt|chatgpt|Chatgpt)\s(.+)/;
-    const match = input.match(regex);
-    return match ? match[2] : null;
-};
-
-/* New Line */
 async function gptGo(query) {
     const encodeQuery = encodeURIComponent(query)
     const tokenResponse = await fetch(`https://gptgo.ai/action_get_token.php?q=${encodeQuery}&hlgpt=id`, {

@@ -6,8 +6,8 @@ function buildPrompt(messages) {
 }
 
 export async function before(m) {
-  if (m.isBaileys || !global.db.data.chats[m.chat]?.autochat || !m.text) return false;
   this.autochat = this.autochat ? this.autochat : {};
+  if (m.isBaileys || !this.autochat.status || !m.text) return false;
   let text = m.text;
   if (text) {
     try {
@@ -20,17 +20,27 @@ export async function before(m) {
       if (text.startsWith('settype')) {
         const setType = parseInt(text.split(' ')[1]);
         this.autochat.settype = setType;
-        await this.reply(m.chat, `Set settype to ${setType}.`, m);
+        if (setType === 1) {
+          delete this.autochat.modelName;
+          await this.reply(m.chat, `Set settype to ${setType}.`, m);
+        } else if (setType === 2) {
+          delete this.autochat.modelId;
+          await this.reply(m.chat, `Set settype to ${setType}.`, m);
+        } else {
+          await this.reply(m.chat, 'Invalid settype value.', m);
+        }
       } else if (text.startsWith('setmodel')) {
         const setModel = parseInt(text.split(' ')[1]);
-        if (setModel === 1) {
-          this.autochat.modelId = replicateModel[0];
-          await this.reply(m.chat, `Set model to Replicate model 1.`, m);
-        } else if (setModel === 2) {
-          this.autochat.modelName = cohereModel[0];
-          await this.reply(m.chat, `Set model to Cohere model 1.`, m);
+        const selectedModelIndex = setModel - 1;
+
+        if (this.autochat.settype === 1 && selectedModelIndex < replicateModel.length) {
+          this.autochat.modelId = replicateModel[selectedModelIndex];
+          await this.reply(m.chat, `Set model to Replicate model ${selectedModelIndex + 1}.`, m);
+        } else if (this.autochat.settype === 2 && selectedModelIndex < cohereModel.length) {
+          this.autochat.modelName = cohereModel[selectedModelIndex];
+          await this.reply(m.chat, `Set model to Cohere model ${selectedModelIndex + 1}.`, m);
         } else {
-          await this.reply(m.chat, 'Invalid setmodel value.', m);
+          await this.reply(m.chat, 'Invalid setmodel value or model type mismatch.', m);
         }
       } else if (text.includes('ai') || text.includes('autochat')) {
         const startIdx = Math.max(text.indexOf('ai'), text.indexOf('autochat')) + 2;
@@ -56,12 +66,12 @@ export async function before(m) {
 
         await this.reply(m.chat, generatedText, m);
       } else if (text.startsWith('reset')) {
-          delete this.autochat;
-          await this.reply(m.chat, `*Ai reset success*`, m);
-        } else if (text.startsWith('off')) {
-          global.db.data.chats[m.chat].autochat = false;
-          await this.reply(m.chat, `*Ai OFF success*`, m);
-        }
+        delete this.autochat;
+        await this.reply(m.chat, `*Autochat reset*`, m);
+      } else if (text.startsWith('off')) {
+        this.autochat.status = false;
+        await this.reply(m.chat, `*Autochat OFF*`, m);
+      }
     } catch {
       await this.reply(m.chat, 'Error occurred.', m);
     }
