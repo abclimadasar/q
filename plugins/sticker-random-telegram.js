@@ -38,7 +38,7 @@ try {
                 pack: packname,
                 keepScale: true
             })
-            m.reply(out)
+            await m.reply(out)
     } catch (e) {
     throw eror
     }

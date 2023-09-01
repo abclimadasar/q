@@ -1,7 +1,7 @@
-let handler = async(m, { command }) => {
-    command = command.toLowerCase()
+let handler = async(m, { command, args }) => {
+    const input = args[0].toLowerCase()
     this.anonymous = this.anonymous ? this.anonymous : {}
-    switch (command) {
+    switch (input) {
         case 'next':
         case 'leave': {
             let room = Object.values(this.anonymous).find(room => room.check(m.sender))
@@ -10,7 +10,7 @@ let handler = async(m, { command }) => {
             let other = room.other(m.sender)
             if (other) await this.reply(other, '*Partner meninggalkan chat*', m)
             delete this.anonymous[room.id]
-            if (command === 'leave') break
+            if (args[0] === 'leave') break
         }
         case 'start': {
             if (Object.values(this.anonymous).find(room => room.check(m.sender))) return this.reply(m.chat, '*Kamu masih berada di dalam anonymous chat, menunggu partner*', m)
@@ -39,9 +39,9 @@ let handler = async(m, { command }) => {
         }
     }
 }
-handler.help = ['start', 'leave', 'next']
+handler.help = ['anonymous start', 'anonymous leave', 'anonymous next']
 handler.tags = ['anonymous']
-handler.command = ['start', 'leave', 'next']
+handler.command = ['anonymous']
 
 handler.private = true
 

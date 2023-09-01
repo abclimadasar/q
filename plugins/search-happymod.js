@@ -69,22 +69,20 @@ export default handler
 
 /* New Line */
 async function searchHappymod(q) {
-  const response = await fetch('https://happymod.com/search.html?q=' + q); // Ganti URL dengan URL yang sesuai
+  const response = await fetch(`https://example.com/search?q=${q}`);
   const body = await response.text();
 
   const $ = cheerio.load(body);
   const sections = [];
 
   $('.container-row.clearfix.container-wrap .container-left section.section-page-white').each((index, element) => {
-    const section = {
-      title: $('h3.pdt-app-h3 a', element).text().trim(),
-      link: 'https://happymod.com' + $('h3.pdt-app-h3 a', element).attr('href'),
-      image: $('img.lazy', element).attr('data-original'),
-      star: $('.a-search-num', element).text().trim()
-    };
+    const title = $('h3.pdt-app-h3 a', element).text().trim();
+    const link = 'https://example.com' + $('h3.pdt-app-h3 a', element).attr('href');
+    const image = $('img.lazy', element).attr('data-original');
+    const star = $('.a-search-num', element).text().trim();
 
-    if (Object.values(section).every(value => value)) {
-      sections.push(section);
+    if (title && link && image && star) {
+      sections.push({ title, link, image, star });
     }
   });
 
@@ -93,24 +91,14 @@ async function searchHappymod(q) {
 
 async function mirrorHappymod(url) {
   try {
-    const response = await fetch(url.endsWith('download.html') ? url : url + 'download.html');
+    const response = await fetch(url + (url.endsWith('download.html') ? '' : 'download.html'));
     const html = await response.text();
     const $ = cheerio.load(html);
-
-    const results = [];
-
-    $('.cbox.mirror ul a').each((index, element) => {
-      const link = $(element).attr('href');
-      const title = $(element).find('h3').text();
-      const source = $(element).find('h4').text();
-
-      results.push({
-        link,
-        title,
-        source
-      });
-    });
-
+    const results = $('.cbox.mirror ul a').map((index, element) => ({
+      link: $(element).attr('href'),
+      title: $(element).find('h3').text(),
+      source: $(element).find('h4').text(),
+    })).get();
     return results;
   } catch (error) {
     console.error('Error:', error);

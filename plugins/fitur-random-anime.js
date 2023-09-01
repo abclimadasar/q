@@ -134,17 +134,15 @@ let handler = async (m, {
         "yuri",
         "zettai"
     ]
-    var listnya = arrlist.map((v, index) => {
-        return `[ ${++index} ] ${usedPrefix + command} ${v}`
-    }).join('\n')
+    var listnya = arrlist.map((v, index) => `[ ${++index} ] ${usedPrefix + command} ${v}`).join('\n')
     let nah = `${htki} *L I S T* ${htka}
 _Example: ${usedPrefix + command} yulibocil_
 
 ${listnya}`
     if (!arrlist.includes(text)) throw nah
-    if (chat.nsfw == false) {
+    if (!chat.nsfw) {
         await m.reply('❗ ᴏᴘᴛɪᴏɴs ɴsғᴡ ᴅɪᴄʜᴀᴛ ɪɴɪ ʙᴇʟᴜᴍ ᴅɪɴʏᴀʟᴀᴋᴀɴ ᴏʟᴇʜ ᴀᴅᴍɪɴ ɢʀᴏᴜᴘ\n\nᴇɴᴀʙʟᴇ: *.on nsfw*')
-    } else if (chat.nsfw == true) {
+    } else {
         try {
             let ani = await fetch('https://raw.githubusercontent.com/AyGemuy/RESTAPI/master/data/' + text + '.json')
             let mek = await ani.json()

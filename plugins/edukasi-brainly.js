@@ -26,8 +26,8 @@ ${v.content.replace(/(<br \/>)/gi, '\n')
         await m.reply(eror)
     }
 }
-handler.help = handler.alias = ["brainlys"]
+handler.help = handler.alias = ["brainly"]
 handler.tags = ["tools"]
-handler.command = /^(brainlys)$/i
+handler.command = /^(brainly)$/i
 
 export default handler
